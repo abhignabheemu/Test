@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/Ericsson/!svn/ver/47/PerformanceFramework/PerformanceFramework/PerformanceFramework/bin
+END
+LoadTestReport.class
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/Ericsson/!svn/ver/47/PerformanceFramework/PerformanceFramework/PerformanceFramework/bin/LoadTestReport.class
+END
+Sendmail.class
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/Ericsson/!svn/ver/47/PerformanceFramework/PerformanceFramework/PerformanceFramework/bin/Sendmail.class
+END
+Framework.class
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/Ericsson/!svn/ver/47/PerformanceFramework/PerformanceFramework/PerformanceFramework/bin/Framework.class
+END
+XMLParser.class
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/Ericsson/!svn/ver/47/PerformanceFramework/PerformanceFramework/PerformanceFramework/bin/XMLParser.class
+END
+CSVReader$Headers.class
+K 25
+svn:wc:ra_dav:version-url
+V 116
+/svn/Ericsson/!svn/ver/47/PerformanceFramework/PerformanceFramework/PerformanceFramework/bin/CSVReader$Headers.class
+END
+CSVReader.class
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/Ericsson/!svn/ver/47/PerformanceFramework/PerformanceFramework/PerformanceFramework/bin/CSVReader.class
+END
+Sendmail$SMTPAuthenticator.class
+K 25
+svn:wc:ra_dav:version-url
+V 125
+/svn/Ericsson/!svn/ver/47/PerformanceFramework/PerformanceFramework/PerformanceFramework/bin/Sendmail$SMTPAuthenticator.class
+END
+HtmlFileReader.class
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/Ericsson/!svn/ver/47/PerformanceFramework/PerformanceFramework/PerformanceFramework/bin/HtmlFileReader.class
+END
+ReadConfigDetails.class
+K 25
+svn:wc:ra_dav:version-url
+V 116
+/svn/Ericsson/!svn/ver/47/PerformanceFramework/PerformanceFramework/PerformanceFramework/bin/ReadConfigDetails.class
+END
+DatabaseMethods.class
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/svn/Ericsson/!svn/ver/47/PerformanceFramework/PerformanceFramework/PerformanceFramework/bin/DatabaseMethods.class
+END

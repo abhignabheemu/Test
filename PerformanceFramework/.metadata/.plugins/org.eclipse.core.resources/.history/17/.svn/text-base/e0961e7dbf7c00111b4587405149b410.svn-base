@@ -1,0 +1,242 @@
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.Text;
+import org.jdom.input.SAXBuilder;
+import org.jdom.xpath.*;
+import java.io.*;
+//import org.jaxen.XPath;;
+
+
+public class XMLParser {
+	
+	String TCAvgrespTime = null;
+	String TCHitspersec = null;
+	String TCFailHitspersec = null;
+	String TCToterrors = null;
+	String TCFailAss = null;
+	String TCTotAss = null;
+	String TCStartTime =null;
+	String TCExecutionTime = null;
+	String TCEndTime = null;
+	String TCStatus = null;
+	int TCId = 0;
+	String TCTitle = null;
+	String RepStatus =null;
+	String RepRequests =null;
+	String RepTotassertions = null;
+	String RepFailassertions = null;
+	String RepDuration = null;
+	String RepStartTime =null;
+	String RepEndTime = null;
+	XPath  xpathInstance   =   null;
+	//String[] path = null;
+	//function will giv etive the value of node based on XPath
+	public String FindnodevaluewithXpath(Element rootnode,String Xpath)
+	
+	{
+		String[] path = null;
+		String Elmname =null;
+		int indent = 0;
+		int Actnindent = 1;
+		String nodevalue = null;
+		Element node = null;
+		String pathname = null;
+		try
+		{
+
+			
+			if (Xpath.contains("/"))
+				path = Xpath.split("/");
+			else
+				path[0] = Xpath;
+			
+			for(int i=0; i<path.length ; i++)
+			{	
+								
+				List list = rootnode.getChildren();
+				
+				Iterator elemIterator2 = list.iterator();
+				Actnindent = 1;
+				indent =0;
+				while (elemIterator2.hasNext() )
+				{
+		        	
+					node = (Element) elemIterator2.next();
+		        	System.out.println(node.getName());
+		        	System.out.println(path[i]);
+		        	Elmname = node.getName();		
+		        	
+		        	if(path[i].contains("["))
+		        	{
+		        		int x = path[i].indexOf("[");	        		
+		        		
+		        		pathname = path[i].substring(0,x);
+		        		System.out.println(indent);
+		        	}
+		        	else
+		        	{
+		        		pathname = path[i];
+		        	}
+		            if (pathname.equals(Elmname) )
+		            {            	
+		            	if(path[i].contains("["))
+			        	{
+			        		int x = path[i].indexOf("[");
+			        		int y = path[i].indexOf("]");
+			        		System.out.println(path[i].substring(x+1,y));
+			        		indent = Integer.parseInt(path[i].substring(x+1,y));
+			        		System.out.println(indent);
+			        		
+			        	}
+		            	if(indent > 0)
+	            		{
+	            			if(indent == Actnindent)
+	            			{
+	            				if(i+1 == path.length )
+	            				{
+	    	            			nodevalue =  node.getValue();
+	            					break;
+	            				}
+	            				else
+	    		            	{
+//	    		            		int j=i+1;
+//	    			            	String xpath = path[j] ;
+//	    			            	for (j=i+2;j<path.length;j++)
+//	    			            	{
+//	    			            		xpath = xpath + "/" + path[j];
+//	    			            	}
+	            					
+//	    			            	System.out.println(xpath);
+	    			            	System.out.println(node.getName());
+	    			            	System.out.println(node);
+	    			            	rootnode = node;
+	    			            	break;
+	    			            	//nodevalue = FindnodevaluewithXpath(node,xpath);
+	    		            	}
+	            				
+	            			}
+	            			Actnindent = Actnindent+1;
+	            		}
+		            	else
+		            	{
+		            		if(i+1 == path.length )
+		            		{
+		            			nodevalue =  node.getValue();
+	        					break;
+	        				}
+		            		else
+			            	{
+//			            		int j=i;
+//				            	String xpath = path[j] ;
+//				            	for (j=i+1;j<path.length;j++)
+//				            	{
+//				            		xpath = xpath + "/" + path[j];
+//				            	}
+				            	rootnode = node;
+				            	break;
+				            	//nodevalue = FindnodevaluewithXpath(node,xpath);
+			            	}
+		            		
+		            	}
+		            	
+		            	
+		            }
+		        }
+			}
+			
+					
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		return nodevalue;
+	}
+	
+	public void updateXMLinDatabase(int tclog)
+	{
+		int i=0;
+		int TCExecutionlog=0;
+		String errorreason = null;
+		SAXBuilder builder = new SAXBuilder();
+		File xmlFile = new File("c:\\Loaduiresults\\Sat-Sample-summary-1333084239967.xml");
+
+		try {
+			Document document = (Document) builder.build(xmlFile);
+			Element rootNode = document.getRootElement();
+			List list = rootNode.getChildren();
+			Iterator elemIterator2 = list.iterator();
+			
+            if (elemIterator2.hasNext() ){
+            	
+            	Element Elm = (Element) elemIterator2.next();
+            	//System.out.println(Elm.getName());
+            	//String Value = FindnodevaluewithXpath(Elm,"section[1]/duration");
+            	//String Value = FindnodevaluewithXpath(Elm,"section[2]/testcase_data/row/test_case");
+            	//System.out.println(Value);
+            	RepStatus =FindnodevaluewithXpath(Elm,"section[1]/status");
+        		RepRequests =FindnodevaluewithXpath(Elm,"section[2]/total_number_of_requests");
+        		RepTotassertions = FindnodevaluewithXpath(Elm,"section[2]/total_number_of_assertions");
+        		RepFailassertions = FindnodevaluewithXpath(Elm,"section[2]/total_number_of_failed_assertions");
+        		RepDuration = FindnodevaluewithXpath(Elm,"section[2]/duration");
+        		RepStartTime =FindnodevaluewithXpath(Elm,"section[2]/start_time");
+        		RepEndTime = FindnodevaluewithXpath(Elm,"section[2]/end_time");
+        		System.out.println(RepStatus);
+        		System.out.println(RepRequests);
+        		System.out.println(RepTotassertions);
+        		System.out.println(RepFailassertions);
+        		System.out.println(RepDuration);
+        		System.out.println(RepStartTime);
+        		System.out.println(RepEndTime);
+            }
+            i=2;
+            while (elemIterator2.hasNext() ){
+            	
+            	Element Elm = (Element) elemIterator2.next();
+            	String Attributevalue = Elm.getAttributeValue("title");
+            	TCId = 0;
+            	TCTitle =Attributevalue.trim();
+            	TCStatus = FindnodevaluewithXpath(Elm,"section[1]/status");
+            	TCExecutionlog = tclog;
+            	TCExecutionTime = FindnodevaluewithXpath(Elm,"section[2]/duration");
+            	errorreason = "";
+            	TCStartTime = FindnodevaluewithXpath(Elm,"section[2]/start_time");
+            	TCEndTime = FindnodevaluewithXpath(Elm,"section[i]/end_time");
+            	TCAvgrespTime = FindnodevaluewithXpath(Elm,"section[3]/runners/row/avg");
+            	TCHitspersec = FindnodevaluewithXpath(Elm,"section[2]/total_number_of_requests");
+            	TCFailHitspersec = FindnodevaluewithXpath(Elm,"section[2]/total_number_of_failed_requests");
+            	TCToterrors = FindnodevaluewithXpath(Elm,"section[3]/runners/row/err");            	
+            	TCTotAss = FindnodevaluewithXpath(Elm,"section[2]/total_number_of_assertions");
+            	TCFailAss = FindnodevaluewithXpath(Elm,"section[2]/total_number_of_failed_assertions");
+            	
+            	
+            	i=i++;
+            }
+
+		
+		} catch (Exception e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		
+	
+	}
+	
+	public XMLParser()
+	{
+		int tclog = 1;
+		updateXMLinDatabase(tclog);
+	}
+
+	public static void main( String args[])
+	{
+		new XMLParser();
+	}
+}

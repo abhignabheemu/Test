@@ -1,0 +1,182 @@
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.util.*;
+
+import com.csvreader.CsvReader;
+
+
+
+public class CSVReader {
+
+	public enum Headers { NetworkThroughput,NetworkUtil,Procidle,ProcQueue,FreeMemory,
+		                  PagesperSec,PageFaults,DskIdle,DskThrpt,DskQLngth};
+	/**
+	 * @param args
+	 * @throws IOException 
+	 * @throws FileNotFoundException 
+	 */
+	public CSVReader(int TCCaseId,String TCTitle,String TCServerip, String filepath,String database) throws IOException {
+		
+		CsvReader reader;
+		int tCaseId = TCCaseId;
+		String TCaseTitle =TCTitle;// "Sample Test Case";
+		System.out.println("CSV TCTitle:  "  +TCTitle);
+		int TCaseExecutionLog = Framework.tclog;
+		System.out.println("CSV TCaseExecutionLog:  "  +TCaseExecutionLog);
+		String TCaseServerip = TCServerip;//"172.20.160.132";
+		float TCaseProcessorIdelTime = 0;
+		float TCaseProcessorqueuelength = 0;
+		float TCaseAvailablememory = 0;
+		float TCasePagespersec = 0;
+		float TCasePagefaultspersec = 0;
+		float TCaseDiskIdleTime = 0;
+		float TCaseDiskBytesTransfered = 0;
+		float TCaseDiskqueuelength = 0;
+		float TCaseNetworkbytespersec = 0;
+		float TCaseNetworkUtil = 0;
+		int noOfRows = 0;
+		int noOfTotalVitals = 0;
+		int noOfFailedVitals = 0;
+		int noOfPassesVitals =0 ;
+		Headers header;
+		float record;
+		Connection conn;
+		PreparedStatement pst = null;
+		
+		
+			try {
+				reader = new CsvReader(new FileReader(filepath));
+				reader.skipLine();
+				//reader.skipLine();
+				reader.readHeaders();
+				//reader.skipLine();
+				String[] headers = reader.getHeaders();
+				//System.out.println(headers.length);
+					while(reader.readRecord()){
+						noOfRows = noOfRows+1;
+						//System.out.println("Row no:"+noOfRows);
+						for(int i=1;i<headers.length;i++){
+							noOfTotalVitals = noOfTotalVitals+1;
+							//System.out.println("headers["+i+"] : "+headers[i]);
+							if(headers[i].contains("%")){
+								header = Headers.valueOf(headers[i].replaceAll("%", ""));								
+							}
+							else{
+								header = Headers.valueOf(headers[i]);
+							}
+							//System.out.println("header : "+header);
+							//System.out.println(headers[i]+":"+reader.get(headers[i]));/
+							record = Float.parseFloat(reader.get(headers[i]));
+							switch (header) {
+								case NetworkThroughput:	
+									TCaseNetworkbytespersec = TCaseNetworkbytespersec + record;
+									break;
+								case NetworkUtil:
+									if(record > 80)
+										noOfFailedVitals = noOfFailedVitals + 1;
+									TCaseNetworkUtil = TCaseNetworkUtil + record;
+									break;
+								case Procidle:
+									if(record < 20)
+										noOfFailedVitals = noOfFailedVitals + 1;
+									TCaseProcessorIdelTime = TCaseProcessorIdelTime + record;
+									break;
+								case ProcQueue:
+									if(record > 3)										
+										noOfFailedVitals = noOfFailedVitals + 1;
+									TCaseProcessorqueuelength = TCaseProcessorqueuelength + record;
+									break;
+								case FreeMemory:
+									if(record < 131072)
+										noOfFailedVitals = noOfFailedVitals + 1;
+									TCaseAvailablememory = TCaseAvailablememory + record;
+									break;
+								case PagesperSec:									
+									TCasePagespersec = TCasePagespersec + record;
+									break;
+								case PageFaults:
+									if(record > 80)
+										noOfFailedVitals = noOfFailedVitals + 1;
+									TCasePagefaultspersec = TCasePagefaultspersec + record;
+									break;
+								case DskIdle:
+									if(record < 20)
+										noOfFailedVitals = noOfFailedVitals + 1;
+									TCaseDiskIdleTime = TCaseDiskIdleTime + record;
+									break;
+								case DskThrpt:									
+									TCaseDiskBytesTransfered = TCaseDiskBytesTransfered + record;
+									break;
+								case DskQLngth:
+									if(record > 20)
+										noOfFailedVitals = noOfFailedVitals + 1;
+									TCaseDiskqueuelength = TCaseDiskqueuelength + record;
+									break;
+									
+							}
+						}
+					}
+					noOfPassesVitals = noOfTotalVitals - noOfFailedVitals;
+					System.out.println("noOfTotalVitals :"+noOfTotalVitals );
+					System.out.println("noOfRows :"+noOfRows );
+					System.out.println("TCaseNetworkbytespersec :"+(TCaseNetworkbytespersec/18));
+					System.out.println("TCaseNetworkUtil :"+(TCaseNetworkUtil/18));
+					System.out.println("TCaseProcessorIdelTime :"+(TCaseProcessorIdelTime/18));
+					System.out.println("TCaseProcessorqueuelength :"+(TCaseProcessorqueuelength/18));
+					System.out.println("TCaseAvailablememory :"+(TCaseAvailablememory/18));
+					System.out.println("TCasePagespersec :"+(TCasePagespersec/18));
+					System.out.println("TCasePagefaultspersec :"+(TCasePagefaultspersec/18));
+					System.out.println("TCaseDiskIdleTime :"+(TCaseDiskIdleTime/18));
+					System.out.println("TCaseDiskBytesTransfered :"+(TCaseDiskBytesTransfered/18));
+					System.out.println("TCaseDiskqueuelength :"+(TCaseDiskqueuelength/18));
+					System.out.println("noOfFailedVitals : "+noOfFailedVitals);
+					System.out.println("noOfPassesVitals : "+noOfPassesVitals);
+					try {
+						Class.forName("com.mysql.jdbc.Driver");
+						//conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/ericsson_database","root","root");
+						new ReadConfigDetails();
+						conn = DriverManager.getConnection(ReadConfigDetails.DBconnectionpath+ "/" + ReadConfigDetails.LoadUIDBName +"," + ReadConfigDetails.DBusername+","+ReadConfigDetails.DBpassword);
+//						new DatabaseMethods(database);
+						String sql="INSERT INTO ltblservervitals(`TCaseId`,`TCaseTitle`,`TCaseExecutionLog`,`TCaseServerip`,`TCaseProcessorIdelTime`,`TCaseProcessorqueuelength`,`TCaseAvailablememory`,`TCasePagefaultspersec`,`TCasePagespersec`,`TCaseDiskIdleTime`,`TCaseDiskBytesTransfered`,`TCaseDiskqueuelength`,`TCaseNetworkbytespersec`,`TCaseNetworkUtil`) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+						/*++","++","++","++
+									","+ +","+ +","++","+
+									+","++","++","++","+
+									+","++","++")";*/
+
+						System.out.println(sql);
+						pst=conn.prepareStatement(sql);
+						pst.setInt(1, tCaseId);
+						pst.setString(2, TCaseTitle);
+						pst.setInt(3, TCaseExecutionLog);
+						pst.setString(4, TCaseServerip);
+						pst.setDouble(5, TCaseProcessorIdelTime);
+						pst.setDouble(6, TCaseProcessorqueuelength);
+						pst.setDouble(7, TCaseAvailablememory);
+						pst.setDouble(8, TCasePagefaultspersec);
+						pst.setDouble(9, TCasePagespersec);
+						pst.setDouble(10, TCaseDiskIdleTime);
+						pst.setDouble(11, TCaseDiskBytesTransfered);
+						pst.setDouble(12, TCaseDiskqueuelength);
+						pst.setDouble(13, TCaseNetworkbytespersec);
+						pst.setDouble(14, TCaseNetworkUtil);
+						
+						pst.executeUpdate();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					
+			}
+						
+			catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+	}
+}
+			
+

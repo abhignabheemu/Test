@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 119
+/svn/Ericsson/!svn/ver/47/PerformanceFramework/PerformanceFramework/.metadata/.plugins/org.eclipse.debug.core/.launches
+END
+ReadConfigDetails.launch
+K 25
+svn:wc:ra_dav:version-url
+V 144
+/svn/Ericsson/!svn/ver/47/PerformanceFramework/PerformanceFramework/.metadata/.plugins/org.eclipse.debug.core/.launches/ReadConfigDetails.launch
+END
+DatabaseMethods.launch
+K 25
+svn:wc:ra_dav:version-url
+V 142
+/svn/Ericsson/!svn/ver/47/PerformanceFramework/PerformanceFramework/.metadata/.plugins/org.eclipse.debug.core/.launches/DatabaseMethods.launch
+END
+LoadTestReport.launch
+K 25
+svn:wc:ra_dav:version-url
+V 141
+/svn/Ericsson/!svn/ver/47/PerformanceFramework/PerformanceFramework/.metadata/.plugins/org.eclipse.debug.core/.launches/LoadTestReport.launch
+END
+Sendmail.launch
+K 25
+svn:wc:ra_dav:version-url
+V 135
+/svn/Ericsson/!svn/ver/47/PerformanceFramework/PerformanceFramework/.metadata/.plugins/org.eclipse.debug.core/.launches/Sendmail.launch
+END
+Framework.launch
+K 25
+svn:wc:ra_dav:version-url
+V 136
+/svn/Ericsson/!svn/ver/47/PerformanceFramework/PerformanceFramework/.metadata/.plugins/org.eclipse.debug.core/.launches/Framework.launch
+END
+XMLParser.launch
+K 25
+svn:wc:ra_dav:version-url
+V 136
+/svn/Ericsson/!svn/ver/47/PerformanceFramework/PerformanceFramework/.metadata/.plugins/org.eclipse.debug.core/.launches/XMLParser.launch
+END
+XMLResultsParser.launch
+K 25
+svn:wc:ra_dav:version-url
+V 143
+/svn/Ericsson/!svn/ver/47/PerformanceFramework/PerformanceFramework/.metadata/.plugins/org.eclipse.debug.core/.launches/XMLResultsParser.launch
+END

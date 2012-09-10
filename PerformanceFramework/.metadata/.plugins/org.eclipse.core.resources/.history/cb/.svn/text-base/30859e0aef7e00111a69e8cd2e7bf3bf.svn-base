@@ -1,0 +1,88 @@
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+
+
+public class DatabaseMethods {
+	
+	//Class.forName("com.mysql.jdbc.Driver");
+	Connection conn = null;//DriverManager.getConnection("jdbc:mysql:\\localhost:3306\\\ericsson_database","root","root");
+	public DatabaseMethods(String dbname) 
+
+	{
+		
+		try 
+		{
+			Class.forName("com.mysql.jdbc.Driver");
+			//conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/ericsson_database","root","root");
+			new ReadConfigDetails();
+			conn = DriverManager.getConnection(ReadConfigDetails.DBconnectionpath+ ReadConfigDetails.LoadUIDBName +"," + ReadConfigDetails.DBusername+","+ReadConfigDetails.DBpassword);
+			
+		} 
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	public void UpdateInsertToTable(String sqlcommand) 
+
+	{
+		Statement stmt;
+		try 
+		{
+			stmt=(Statement) conn.createStatement();
+			stmt.executeUpdate(sqlcommand);
+			//stmt.executeQuery(sqlcommand);
+		}
+		catch (SQLException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public ResultSet SelectFromTable(String sqlcommand)
+	{
+		Statement stmt;
+		ResultSet rs =null;
+		try 
+		{
+			stmt=(Statement) conn.createStatement();			
+			rs=stmt.executeQuery(sqlcommand);
+		}
+		catch (SQLException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return rs;
+	}
+	
+	public static void main( String args[])
+	{
+		new DatabaseMethods("db");
+//		String sql,tcaseid,tcaseName;
+//		Statement stmt;
+//		PreparedStatement st;
+//		
+//		sql = "select * from tbltestcasemstr";
+//		st=conn.prepareStatement(sql);
+//		rs=st.executeQuery();
+//		While(rs.next()){
+//		tcaseid = rs.getInt("tCaseId");
+//		tcaseid = rs.getString("tCaseName");
+//		}
+//
+//
+//		sql="INSERT INTO tbltestresults(`TCaseID`,`TCaseTitle`,`TCaseResult`,`TCaseErrorReason`,`TcaseExecutionTime`,`TCaseExecutionLog`) VALUES(" + (Integer.parseInt(result.get(0)))+ ",'" + result.get(1)+"','"+ result.get(2)+"','"+ result.get(3)+"','"+ result.get(4)+ "',"+ (Integer.parseInt(result.get(5)))+ ")";
+//					
+//					stmt=(Statement) conn.createStatement();
+//					stmt.executeUpdate(sql);
+	}
+}
+

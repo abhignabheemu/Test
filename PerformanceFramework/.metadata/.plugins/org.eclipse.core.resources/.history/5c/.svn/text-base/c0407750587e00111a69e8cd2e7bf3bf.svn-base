@@ -1,0 +1,158 @@
+
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
+public class LoadTestReport {
+	public static String finalTestResult= "Passed"; 
+	
+	public static  String testResultPath ;
+	static String fileName = null;
+	FileOutputStream fileOut = null;
+	static Writer writer = null;
+	static Calendar calendar = Calendar.getInstance();
+	public static final String dateTime = "MMddyy_HHmmss";
+	static SimpleDateFormat dateFormat = new SimpleDateFormat(dateTime);
+	public static int  ExecutionLog = 1; //Dynamic
+	static double LReqPerHits = 0, WReqPerHits = 0, LtotalAsrtn=0, WtotalAsrtn=0 ,LfailAsrtn=0, WfailAsrtn=0,
+				LpassAsrtn =0, WpassAsrtn=0 ,Lfailedreqpersec=0, Wfailedreqpersec=0;
+	public static final String dateTime2 = "MM/dd/yy HH:mm:ss";
+	static SimpleDateFormat dateFormat2 = new SimpleDateFormat(dateTime);
+
+	public static void main(String[] args) throws SQLException, IOException {
+		
+		//GenerateReport(generateData(ExecutionLog));
+		
+	}
+	
+	public static void GenerateReport(String text,String ResultPath) throws IOException{
+		try {
+			
+    	//fileName = "Test Results_" + dateFormat.format(calendar.getTime())+ ".html";
+    	//System.out.println(fileName);
+    	//TestReport path 
+    	testResultPath = ResultPath+ ".html";//"D:/Ericsson/Eric_LoadTestReport/TestReport/" + fileName;	    	
+    	//fileOut = new FileOutputStream(testResultPath);
+		File file = new  File(testResultPath);
+		writer = new  BufferedWriter(new  FileWriter(file));
+		System.out.println(text);
+		writer.write(text);
+		writer.close();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	public static String generateData(int Executionlog) throws SQLException{
+		String text=null;
+		
+		//LoadUI results
+		DatabaseMethods dbm1 = new DatabaseMethods(Framework.database);
+		ResultSet rs = dbm1.SelectFromTable("select * from ltbltestresults where TCaseExecutionLog= "+Executionlog+" order by TCaseID");
+		String HTMLHead = "<html><head><title>Performance test results</title></head><body><p align=CENTER><font size=5 style=font-size: 17pt;><b>Summary for &lt;&lt;Project Execution Name&gt;&gt;</b></font></p>";
+		
+		String LHTMLBodyCaseWise="",LHTMLTCwiseAssrnDtls = "";
+		while(rs.next())
+		{
+			int LTCaseID = rs.getInt("TCaseID");
+			System.out.println("LTCaseID: "+LTCaseID);
+			LfailAsrtn = LfailAsrtn+  rs.getInt("TCaseFailedassertions");
+			LtotalAsrtn = LtotalAsrtn+  rs.getInt("TCaseTotalAssertions");
+			
+			Lfailedreqpersec = Lfailedreqpersec + rs.getDouble("TCaseFailedRequestsorhitspersec");
+			// If any of the case is failed final performance result should be fail
+			System.out.println(rs.getString("TCaseResult"));
+			if(rs.getString("TCaseResult").equalsIgnoreCase("failed"))
+				finalTestResult = "Fail";
+			
+			LReqPerHits = LReqPerHits + rs.getDouble("TCaseTotalRequestsorhitspersec");
+			
+			//Testcase wise execution details, Server vitals table info
+			LHTMLBodyCaseWise =  LHTMLBodyCaseWise + "<p><font size=4 style=font-size: 15pt color=red><b>TestCase: "+LTCaseID+"</b></font></p><table border=1 cellpadding=1 cellspacing=1 bgcolor=#C6DEFF style=width: 800px; height: 93px;><tbody><tr><td style=width: 45%; text-align: center;><b>Name</b></td><td style=width: 10%;><b>Avg. Response Time</b></td><td style=width: 7px;><b>Requests/Hits per sec</b></td><td style=width: 8%;><b>Total Errors</b></td><td><b>Total Assertions</b></td><td><b>Failed Assertions</b></td></tr><tr><td>"+rs.getString("TCaseTitle")+"</td><td>"+rs.getString("TCaseResponsepersec")+"</td><td>"+rs.getString("TCaseTotalRequestsorhitspersec")+"</td><td>"+rs.getString("TCaseTotalerrors")+"</td><td>"+LtotalAsrtn+"</td><td>"+rs.getString("TCaseFailedassertions")+"</td></tr></tbody></table><p style=margin-bottom: 0in;><font size=3 style=font-size: 13pt;><b>Execution Details</b></font></p><table border=1 cellpadding=1 cellspacing=1 bgcolor=#C6DEFF><tbody><tr></tr><tr><td style=width: 60%; vertical-align: top; text-align: left;><p style=margin-bottom: 0in; line-height: 100%;><font color=#000000><font face=Calibri, serif>Total Duration</font></font></p></td><td>1 hr</td></tr><tr><td style=height: 1px;><p style=margin-bottom: 0in; line-height: 100%;><font color=#000000><font face=Calibri, serif>Start time</font></font></p></td><td>"+rs.getString("TCaseStartTime")+"</td></tr><tr><td>End time</td><td>"+rs.getString("TCaseEndTime")+"</td></tr><tr><td>Total number of Request/Hits</td><td>"+rs.getString("TCaseTotalRequestsorhitspersec")+"</td></tr><tr><td style=height: 5px;><p style=margin-bottom: 0in; line-height: 100%;><font color=#000000><font face=Calibri, serif>Total no. of failed requests/Hits</font></font></p></td><td>"+rs.getDouble("TCaseFailedRequestsorhitspersec")+"</td></tr><tr><td><p style=margin-bottom: 0in; line-height: 100%;><font color=#000000><font face=Calibri, serif>Total no. of assertion</font></font></p></td><td>"+LtotalAsrtn+"</td></tr><tr><td><p style=margin-bottom: 0in; line-height: 70%;><font color=#000000><font face=Calibri, serif>Total no. of failed assertion</font></font></p></td><td>"+rs.getString("TCaseFailedassertions")+"</td></tr></tbody></table><p>&nbsp;</p><p style=margin-bottom: 0in;><font size=4 style=font-size: 15pt;><b>Server Vitals</b></font></p>";
+			
+			
+			
+			ResultSet bs = dbm1.SelectFromTable("select * from ltblservervitals where TCaseExecutionLog= "+Executionlog+" order by TCaseID");
+			while(bs.next())
+			{
+				System.out.println("ServerLTCaseID: "+bs.getInt("TCaseID"));
+				if(LTCaseID==bs.getInt("TCaseID"))
+					LHTMLBodyCaseWise =  LHTMLBodyCaseWise + "<p style=margin-bottom: 0in;><font size=4 style=font-size: 10pt;><b>Server IP: "+bs.getString("TCaseServerip")+"</b></font></p><table border=1 cellpadding=1 cellspacing=1 bgcolor=#C6DEFF style=width: 729px; height: 353px;><tbody><tr><td style=width: 25%; align=center><b>Entity</b></td><td style=width: 25%; align=center><b>Vital</b></td><td style=width: 17%; align=center><b>Avg. Value</b></td></tr><tr><td><b>Processor</b></td><td>a) Processor Time</td><td>"+bs.getString("TCaseProcessorIdelTime")+"</td></tr><tr><td>&nbsp;</td><td>b) System- Process Queue length</td><td>"+bs.getString("TCaseProcessorqueuelength")+"</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td><b>Memory</b></td><td>a) Pages/Sec</td><td>"+bs.getString("TCasePagespersec")+"</td></tr><tr><td>&nbsp;</td><td>b) Page faults/Sec</td><td>"+bs.getString("TCasePagefaultspersec")+"</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td><b>Physical Disk</b></td><td>a) PhysicalDisk\\% Idle time</td><td>"+bs.getString("TCaseDiskIdleTime")+"</td></tr><tr><td>&nbsp;</td><td>b) PhysicalDisk\\Avg.Disk bytes/Transfer</td><td>"+bs.getString("TCaseDiskBytesTransfered")+"</td></tr><tr><td>&nbsp;</td><td>c)Physical Disk\\Avg. Disk Queue length</td><td>"+bs.getString("TCaseDiskqueuelength")+"</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td><b>Network</b></td><td>a) Network interface - Bytes Total/Sec</td><td>"+bs.getString("TCaseNetworkbytespersec")+"</td></tr><tr><td>&nbsp;</td><td>a) Network Utilisataion(this is more appropriate for Solaris)</td><td>"+bs.getString("TCaseNetworkUtil")+"</td></tr></tbody></table>";
+			}
+			LHTMLTCwiseAssrnDtls = LHTMLTCwiseAssrnDtls + "<tr><td>"+rs.getString("TCaseTitle")+"</td><td>"+rs.getInt("TCaseTotalassertions")+"</td><td>"+(rs.getInt("TCaseTotalAssertions")-rs.getInt("TCaseFailedassertions"))+"</td><td>"+rs.getInt("TCaseFailedassertions")+"</td><td>&nbsp;</td></tr>";
+			
+		}
+		
+		//WAPT results
+		DatabaseMethods dbm2 = new DatabaseMethods(Framework.database);
+		ResultSet ts = dbm2.SelectFromTable("select * from ltbltestresults where TCaseExecutionLog= "+Executionlog+" order by TCaseID");
+		
+		String WHTMLBodyCaseWise="",WHTMLTCwiseAssrnDtls = "";
+		while(ts.next())
+		{
+			int LTCaseID = ts.getInt("TCaseID");
+			System.out.println("LTCaseID: "+LTCaseID);
+			
+			WfailAsrtn = WfailAsrtn+  ts.getInt("TCaseFailedassertions");
+			WtotalAsrtn = WtotalAsrtn+  ts.getInt("TCaseTotalAssertions");
+			
+			Wfailedreqpersec = Wfailedreqpersec + ts.getDouble("TCaseFailedRequestsorhitspersec");
+			// If any of the case is failed final performance result should be fail
+			System.out.println(ts.getString("TCaseResult"));
+			if(ts.getString("TCaseResult").equalsIgnoreCase("failed"))
+				finalTestResult = "Fail";
+			
+			WReqPerHits = WReqPerHits + ts.getDouble("TCaseTotalRequestsorhitspersec");
+			//Testcase wise execution details, Server vitals table info
+			WHTMLBodyCaseWise =  WHTMLBodyCaseWise + "<p><font size=4 style=font-size: 15pt color=red><b>TestCase: "+LTCaseID+"</b></font></p><table border=1 cellpadding=1 cellspacing=1 bgcolor=#C6DEFF style=width: 800px; height: 93px;><tbody><tr><td style=width: 45%; text-align: center;><b>Name</b></td><td style=width: 10%;><b>Avg. Response Time</b></td><td style=width: 7px;><b>Requests/Hits per sec</b></td><td style=width: 8%;><b>Total Errors</b></td><td><b>Total Assertions</b></td><td><b>Failed Assertions</b></td></tr><tr><td>"+ts.getString("TCaseTitle")+"</td><td>"+ts.getString("TCaseResponsepersec")+"</td><td>"+ts.getString("TCaseTotalRequestsorhitspersec")+"</td><td>"+ts.getString("TCaseTotalerrors")+"</td><td>"+LtotalAsrtn+"</td><td>"+ts.getString("TCaseFailedassertions")+"</td></tr></tbody></table><p style=margin-bottom: 0in;><font size=3 style=font-size: 13pt;><b>Execution Details</b></font></p><table border=1 cellpadding=1 cellspacing=1 bgcolor=#C6DEFF><tbody><tr></tr><tr><td style=width: 60%; vertical-align: top; text-align: left;><p style=margin-bottom: 0in; line-height: 100%;><font color=#000000><font face=Calibri, serif>Total Duration</font></font></p></td><td>1 hr</td></tr><tr><td style=height: 1px;><p style=margin-bottom: 0in; line-height: 100%;><font color=#000000><font face=Calibri, serif>Start time</font></font></p></td><td>"+ts.getString("TCaseStartTime")+"</td></tr><tr><td>End time</td><td>"+ts.getString("TCaseEndTime")+"</td></tr><tr><td>Total number of Request/Hits</td><td>"+ts.getString("TCaseTotalRequestsorhitspersec")+"</td></tr><tr><td style=height: 5px;><p style=margin-bottom: 0in; line-height: 100%;><font color=#000000><font face=Calibri, serif>Total no. of failed requests/Hits</font></font></p></td><td>"+ts.getDouble("TCaseFailedRequestsorhitspersec")+"</td></tr><tr><td><p style=margin-bottom: 0in; line-height: 100%;><font color=#000000><font face=Calibri, serif>Total no. of assertion</font></font></p></td><td>"+LtotalAsrtn+"</td></tr><tr><td><p style=margin-bottom: 0in; line-height: 70%;><font color=#000000><font face=Calibri, serif>Total no. of failed assertion</font></font></p></td><td>"+ts.getString("TCaseFailedassertions")+"</td></tr></tbody></table><p>&nbsp;</p><p style=margin-bottom: 0in;><font size=4 style=font-size: 15pt;><b>Server Vitals</b></font></p>";
+			ResultSet cs = dbm2.SelectFromTable("select * from ltblservervitals where TCaseExecutionLog= "+Executionlog+" order by TCaseID");
+			while(cs.next())
+			{
+				System.out.println("ServerLTCaseID: "+cs.getInt("TCaseID"));
+				if(LTCaseID==cs.getInt("TCaseID"))
+					WHTMLBodyCaseWise =  WHTMLBodyCaseWise + "<p style=margin-bottom: 0in;><font size=4 style=font-size: 10pt;><b>Server IP: "+cs.getString("TCaseServerip")+"</b></font></p><table border=1 cellpadding=1 cellspacing=1 bgcolor=#C6DEFF style=width: 729px; height: 353px;><tbody><tr><td style=width: 25%; align=center><b>Entity</b></td><td style=width: 25%; align=center><b>Vital</b></td><td style=width: 17%; align=center><b>Avg. Value</b></td></tr><tr><td><b>Processor</b></td><td>a) Processor Time</td><td>"+cs.getString("TCaseProcessorIdelTime")+"</td></tr><tr><td>&nbsp;</td><td>b) System- Process Queue length</td><td>"+cs.getString("TCaseProcessorqueuelength")+"</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td><b>Memory</b></td><td>a) Pages/Sec</td><td>"+cs.getString("TCasePagespersec")+"</td></tr><tr><td>&nbsp;</td><td>b) Page faults/Sec</td><td>"+cs.getString("TCasePagefaultspersec")+"</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td><b>Physical Disk</b></td><td>a) PhysicalDisk\\% Idle time</td><td>"+cs.getString("TCaseDiskIdleTime")+"</td></tr><tr><td>&nbsp;</td><td>b) PhysicalDisk\\Avg.Disk bytes/Transfer</td><td>"+cs.getString("TCaseDiskBytesTransfered")+"</td></tr><tr><td>&nbsp;</td><td>c)Physical Disk\\Avg. Disk Queue length</td><td>"+cs.getString("TCaseDiskqueuelength")+"</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td><b>Network</b></td><td>a) Network interface - Bytes Total/Sec</td><td>"+cs.getString("TCaseNetworkbytespersec")+"</td></tr><tr><td>&nbsp;</td><td>a) Network Utilisataion(this is more appropriate for Solaris)</td><td>"+cs.getString("TCaseNetworkUtil")+"</td></tr></tbody></table>";
+			}
+			
+			WHTMLTCwiseAssrnDtls = WHTMLTCwiseAssrnDtls + "<tr><td>"+ts.getString("TCaseTitle")+"</td><td>"+ts.getInt("TCaseTotalassertions")+"</td><td>"+(ts.getInt("TCaseTotalAssertions")-ts.getInt("TCaseFailedassertions"))+"</td><td>"+ts.getInt("TCaseFailedassertions")+"</td><td>&nbsp;</td></tr>";
+			
+		}
+		System.out.println("LReqPerHits: "+LReqPerHits);
+		System.out.println("WReqPerHits: "+WReqPerHits);
+		double totalreqperhits = LReqPerHits + WReqPerHits;
+		double totalassertions = LtotalAsrtn + WtotalAsrtn;
+		double totalfailassetions = LfailAsrtn + WfailAsrtn;
+		double totalfailedreqpersec = Lfailedreqpersec + Wfailedreqpersec;
+		String color = "";
+		if(finalTestResult.equalsIgnoreCase("fail"))
+			color = "red";
+		else
+			color = "#0B6121";
+			
+		//here, HTMLBody: Upto First Summary table
+		String HTMLBodySummary = "<table align=center border=1 cellpadding=1 cellspacing=1 bgcolor=#C6DEFF style=height: 53px width= 50% ><tbody><tr><td align=center width= 15%><b>Duration</b></td><td align=center width= 15%><b>Status</b></td><td align=center width= 20%><b>Date</b></td></tr><tr><td align=center>1 hr</td><td style=color:"+color+" align=center><b>"+ finalTestResult +"</b></td><td align=center>04/01/2012</td></tr></tbody></table>";
+		//HTMLBody, consisting Testexecutiondtls table and Total Assertions table including next heading ExecutionSummary
+//		String HTMLBodyExcnDtls = "<p><font size=4 style=font-size: 15pt;><b>Test Execution Details</b></font></p><table border=1 cellpadding=1 cellspacing=1 bgcolor=#C6DEFF style=width: 500px;><tbody><tr><td style=width: 60%; vertical-align: top; text-align: left;><p style=margin-bottom: 0in; line-height: 100%;><font color=#000000><font face=Calibri, serif>Total Duration</font></font></p></td><td>1 hr</td></tr><tr><td style=height: 1px;><p style=margin-bottom: 0in; line-height: 100%;><font color=#000000><font face=Calibri, serif>Start time</font></font></p></td><td>03/30/12 15:30</td></tr><tr><td>End time</td><td>&nbsp;</td></tr><tr><td>Total number of Request/Hits</td><td>"+totalreqperhits+"</td></tr><tr><td style=height: 5px;><p><font color=#000000><font face=Calibri, serif>Total no. of failed requests / Hits</font></font></p></td><td>&nbsp;</td></tr><tr><td><p style=margin-bottom: 0in; line-height: 100%;><font color=#000000><font face=Calibri, serif>Total no. of assertion</font></font></p></td><td>"+totalassertions+"</td></tr><tr><td><p style=margin-bottom: 0in; line-height: 70%;><font color=#000000><font face=Calibri, serif>Total no. of failed assertion</font></font></p></td><td>&nbsp;</td></tr></tbody></table><p style=margin-bottom: 0in;>&nbsp;</p><p><font size=4 style=font-size: 15pt;><b>Total Assertion Details</b></font></p><table border=1 cellpadding=1 cellspacing=1 bgcolor=#C6DEFF style=width: 793px; height: 98px;><tbody><tr><td style=width: 50%; text-align: center;>TestCase Names</td><td style=text-align: center; width: 10%;>Total Count</td><td style=text-align: center; width: 10%;>Total Passed</td><td style=text-align: center; width: 10%;>Toatl Failed</td><td style=text-align: center; width: 50%;>Description of Assertion Failed</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr></tbody></table><p>&nbsp;</p><p style=margin-bottom: 0in;><span><font style=font-size: 15pt;><b>Execution Summary</b></font></span></p>";
+		String HTMLBodyExcnDtls = "<p><font size=4 style=font-size: 15pt;><b>Test Execution Details</b></font></p><table border=1 cellpadding=1 cellspacing=1 bgcolor=#C6DEFF style=width: 500px;><tbody><tr><td style=width: 60%; vertical-align: top; text-align: left;><p style=margin-bottom: 0in; line-height: 100%;><font color=#000000><font face=Calibri, serif>Total Duration</font></font></p></td><td>1 hr</td></tr><tr><td style=height: 1px;><p style=margin-bottom: 0in; line-height: 100%;><font color=#000000><font face=Calibri, serif>Start time</font></font></p></td><td>03/30/12 15:30</td></tr><tr><td>End time</td><td>03/30/12 16:30</td></tr><tr><td>Total number of Request/Hits</td><td>"+totalreqperhits+"</td></tr><tr><td style=height: 5px;><p><font color=#000000><font face=Calibri, serif>Total no. of failed requests/Hits</font></font></p></td><td>"+totalfailedreqpersec+"</td></tr><tr><td><p style=margin-bottom: 0in; line-height: 100%;><font color=#000000><font face=Calibri, serif>Total no. of assertion</font></font></p></td><td>"+totalassertions+"</td></tr><tr><td><p style=margin-bottom: 0in; line-height: 70%;><font color=#000000><font face=Calibri, serif>Total no. of failed assertion</font></font></p></td><td>"+totalfailassetions+"</td></tr></tbody></table><p style=margin-bottom: 0in;>&nbsp;</p><p><font size=4 style=font-size: 15pt;><b>Total Assertion Details</b></font></p>";
+		
+		String AssrnTblHead = "<table border=1 cellpadding=1 cellspacing=1 bgcolor=#C6DEFF style=width: 793px; height: 98px;><tbody><tr><td style=width: 50%; text-align: center;><b>TestCase Names</b></td><td style=text-align: center; width: 10%;><b>Total Count</b></td><td style=text-align: center; width: 10%;><b>Total Passed</b></td><td style=text-align: center; width: 10%;><b>Toatl Failed</b></td><td style=text-align: center; width: 50%;><b>Description of Assertion Failed</b></td></tr>";
+		HTMLBodyExcnDtls=HTMLBodyExcnDtls + AssrnTblHead+ LHTMLTCwiseAssrnDtls+ WHTMLTCwiseAssrnDtls+ "</tbody></table><p>&nbsp;</p><p style=margin-bottom: 0in;><span><font style=font-size: 15pt;><b><h3>Execution Summary</h3></b></font></span></p>";
+		String HTMLtoolHead1 = "<p><font color=#0B6121><b><h2 align=CENTER> Web Services Performance Summary</h2></b></font></p>";
+		String HTMLtoolHead2 = "<p><font color=#0B6121><b><h2 align=CENTER> WAP Site Performance Summary</h2></b></font></p>";
+		
+		text =  HTMLHead + HTMLBodySummary + HTMLBodyExcnDtls + HTMLtoolHead1 +  LHTMLBodyCaseWise + HTMLtoolHead2 + WHTMLBodyCaseWise;
+		
+		return text;
+	
+	}
+	
+
+}
